@@ -1,21 +1,112 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TenderMate</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TenderMate – IT Pre-Sales Assistant</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial;background:#f3f6fa;color:#182235}header{background:#162033;color:#fff;padding:18px 28px;display:flex;justify-content:space-between;align-items:center}h1{margin:0;font-size:22px}main{max-width:1250px;margin:24px auto;padding:0 18px}.toolbar,.panel,.card{background:#fff;border:1px solid #e0e6ee;border-radius:12px;padding:18px}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}button{background:#162033;color:#fff;border:0;border-radius:7px;padding:10px 15px;cursor:pointer}button.secondary{background:#e9eef5;color:#182235}.tabs{display:flex;gap:7px;margin:18px 0;flex-wrap:wrap}.tabs button.active{background:#3657d6}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field{padding:13px;border:1px solid #e4e8ef;border-radius:9px}.label{font-size:11px;color:#6d7889;text-transform:uppercase}.value{font-weight:600;margin-top:5px}.meta{font-size:11px;color:#778397;margin-top:5px}.ok{color:#17824b}.warn{color:#a76500}.danger{color:#b72c35}.list{margin:0;padding-left:20px}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;border-bottom:1px solid #e5e9ef;padding:9px;font-size:13px;vertical-align:top}.upload{border:2px dashed #9eabc0;padding:25px;text-align:center;border-radius:10px;margin-bottom:14px}pre{white-space:pre-wrap;max-height:420px;overflow:auto;background:#f6f8fb;padding:12px;border-radius:8px}.hidden{display:none}@media(max-width:850px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:600px){.grid{grid-template-columns:1fr}}
-</style></head><body><header><h1>⚡ TenderMate – IT Pre-Sales Assistant</h1><span>PDF → OCR → Tender Intelligence</span></header><main>
-<div class="tabs"><button class="active" onclick="showTab('analyze',this)">Analyze Tender</button><button onclick="showTab('dashboard',this)">Tender Dashboard</button><button onclick="showTab('addendum',this)">Addendum Diff</button><button onclick="showTab('compliance',this)">Compliance</button></div>
-<section id="analyze"><div class="upload"><input id="pdf" type="file" accept=".pdf"><button onclick="analyze()">Analyze & Save</button><button class="secondary" onclick="exportXlsx()">Export Excel</button><div id="status">Upload one tender PDF. Scanned PDFs are supported.</div></div><div id="result"></div></section>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial;background:#f3f6fa;color:#182235}
+header{background:#162033;color:#fff;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+h1{margin:0;font-size:22px}main{max-width:1280px;margin:24px auto;padding:0 18px}
+.toolbar,.panel,.card{background:#fff;border:1px solid #e0e6ee;border-radius:12px;padding:18px}
+.tabs{display:flex;gap:7px;margin:18px 0;flex-wrap:wrap}.tabs button.active{background:#3657d6}
+button{background:#162033;color:#fff;border:0;border-radius:7px;padding:10px 15px;cursor:pointer}button.secondary{background:#e9eef5;color:#182235}
+.upload{border:2px dashed #9eabc0;padding:24px;text-align:center;border-radius:10px;margin-bottom:14px}
+.statusbox{margin-top:18px;text-align:left}.statusline{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px}
+.progress{height:14px;background:#e8edf4;border-radius:20px;overflow:hidden}.bar{height:100%;background:#3657d6;width:0%;transition:width .25s}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:12px}.stat{background:#f7f9fc;border:1px solid #e3e8ef;border-radius:9px;padding:12px}.stat b{display:block;font-size:20px}.stat span{font-size:11px;color:#697589}
+.pagebox{margin-top:12px;max-height:230px;overflow:auto;border:1px solid #e3e8ef;border-radius:9px}.pagerow{display:grid;grid-template-columns:65px 90px 1fr 80px;gap:8px;padding:8px 10px;border-bottom:1px solid #edf0f4;font-size:12px}.pagerow:last-child{border-bottom:0}.badge{padding:3px 7px;border-radius:20px;background:#e9eef5;text-align:center}.done{background:#e5f5ed;color:#17774a}.ocr{background:#fff2dd;color:#9b6200}.reading{background:#e7efff;color:#3156ad}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field{padding:13px;border:1px solid #e4e8ef;border-radius:9px}.label{font-size:11px;color:#6d7889;text-transform:uppercase}.value{font-weight:600;margin-top:5px}.meta{font-size:11px;color:#778397;margin-top:5px}
+.list{margin:0;padding-left:20px}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;border-bottom:1px solid #e5e9ef;padding:9px;font-size:13px;vertical-align:top}
+pre{white-space:pre-wrap;max-height:420px;overflow:auto;background:#f6f8fb;padding:12px;border-radius:8px}.hidden{display:none}
+@media(max-width:900px){.stats{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.stats,.grid{grid-template-columns:1fr 1fr}header{display:block}header span{display:block;margin-top:6px}}
+</style></head>
+<body>
+<header><h1>⚡ TenderMate – IT Pre-Sales Assistant</h1><span>Fast PDF → OCR → Tender Intelligence</span></header>
+<main>
+<div class="tabs">
+<button class="active" onclick="showTab('analyze',this)">Analyze Tender</button>
+<button onclick="showTab('dashboard',this)">Tender Dashboard</button>
+<button onclick="showTab('addendum',this)">Addendum Diff</button>
+<button onclick="showTab('compliance',this)">Compliance</button>
+</div>
+
+<section id="analyze">
+<div class="upload">
+<input id="pdf" type="file" accept=".pdf">
+<button onclick="analyze()">Analyze & Save</button>
+<button class="secondary" onclick="exportXlsx()">Export Excel</button>
+<div id="status" style="margin-top:10px">Upload a tender PDF. 200+ page scanned tenders are processed with parallel OCR.</div>
+<div class="statusbox hidden" id="progressBox">
+<div class="statusline"><strong id="phase">Queued</strong><span id="percent">0%</span></div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<div class="stats">
+<div class="stat"><b id="currentPage">0 / 0</b><span>Pages processed</span></div>
+<div class="stat"><b id="textPages">0</b><span>Native text pages</span></div>
+<div class="stat"><b id="ocrPages">0 / 0</b><span>OCR pages</span></div>
+<div class="stat"><b id="speed">0</b><span>Pages/min</span></div>
+<div class="stat"><b id="eta">--</b><span>Estimated time</span></div>
+</div>
+<div class="pagebox" id="pageLog"></div>
+</div>
+</div>
+<div id="result"></div>
+</section>
+
 <section id="dashboard" class="hidden"><div class="panel"><button onclick="loadDashboard()">Refresh</button><div id="dash"></div></div></section>
 <section id="addendum" class="hidden"><div class="panel"><h2>Compare Addendum</h2><p>Select original tender and addendum PDF.</p><input id="oldpdf" type="file" accept=".pdf"> <input id="newpdf" type="file" accept=".pdf"> <button onclick="compareAddendum()">Compare</button><div id="diff"></div></div></section>
 <section id="compliance" class="hidden"><div class="panel"><h2>Compliance Matrix</h2><input id="cpdf" type="file" accept=".pdf"><p>Paste offered model/specification text:</p><textarea id="offered" rows="6" style="width:100%"></textarea><button onclick="compliance()">Build Matrix</button><div id="matrix"></div></div></section>
-</main><script>
-let lastFile=null,lastData=null;
+</main>
+
+<script>
+let lastFile=null,lastData=null,pollTimer=null,pageStates={};
+const API_BASE=location.hostname.endsWith('github.io')?'http://127.0.0.1:8000':'';
 const labels={tender_title:'Tender Title',reference_number:'Reference Number',closing_date:'Closing Date',closing_time:'Closing Time',pre_bid_date:'Pre-Bid Date',pre_bid_time:'Pre-Bid Time',pre_bid_location:'Pre-Bid Location',submission_location:'Submission Location',delivery_period:'Delivery Period',bid_validity:'Bid Validity',quantity:'Tender Quantity',warranty:'Warranty',bid_security:'Bid Security',performance_security:'Performance Security',required_documents:'Required Documents'};
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function showTab(id,btn){document.querySelectorAll('main>section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');if(id==='dashboard')loadDashboard()}
-async function analyze(){const f=document.getElementById('pdf').files[0];if(!f)return alert('Select a PDF first');lastFile=f;document.getElementById('status').textContent='Processing every page and running OCR where required...';const fd=new FormData();fd.append('file',f);const r=await fetch('/api/tenders',{method:'POST',body:fd});const d=await r.json();if(!r.ok)return alert(d.detail);lastData=d;render(d);document.getElementById('status').textContent='Complete — tender saved locally.'}
-function render(d){let h='<div class="grid">';for(const [k,l] of Object.entries(labels)){const f=d.summary[k]||{};h+=`<div class="field"><div class="label">${l}</div><div class="value">${esc(f.value||'Not found')}</div><div class="meta">${f.page?'Page '+f.page+' · '+Math.round(f.confidence*100)+'% confidence':''}</div></div>`}h+='</div><div class="panel" style="margin-top:14px"><h2>Risk / Verification Flags</h2><ul class="list">'+d.risks.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul><h2>Requirements</h2><table class="table"><tr><th>Category</th><th>Requirement</th><th>Page</th></tr>'+d.requirements.map(x=>'<tr><td>'+esc(x.category)+'</td><td>'+esc(x.requirement)+'</td><td>'+x.page+'</td></tr>').join('')+'</table><h2>Page Text</h2><pre>'+esc(d.pages.map(p=>'--- Page '+p.page+' ['+p.method+'] ---\n'+p.text).join('\n\n'))+'</pre></div>';document.getElementById('result').innerHTML=h}
-async function exportXlsx(){if(!lastFile)return alert('Analyze/select a PDF first');const fd=new FormData();fd.append('file',lastFile);const r=await fetch('/api/export',{method:'POST',body:fd});const b=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=lastFile.name.replace(/\.pdf$/i,'')+'_TenderMate.xlsx';a.click()}
-async function loadDashboard(){const r=await fetch('/api/tenders');const d=await r.json();document.getElementById('dash').innerHTML='<h2>Saved Tenders</h2><table class="table"><tr><th>File</th><th>Reference</th><th>Title</th><th>Closing</th><th>Qty</th></tr>'+d.map(x=>'<tr><td>'+esc(x.filename)+'</td><td>'+esc(x.reference||'')+'</td><td>'+esc(x.title||'')+'</td><td>'+esc((x.closing_date||'')+' '+(x.closing_time||''))+'</td><td>'+esc(x.quantity||'')+'</td></tr>').join('')+'</table>'}
-async function compareAddendum(){const a=document.getElementById('oldpdf').files[0],b=document.getElementById('newpdf').files[0];if(!a||!b)return alert('Select both PDFs');const fd=new FormData();fd.append('old_file',a);fd.append('new_file',b);const r=await fetch('/api/compare-addendum',{method:'POST',body:fd});const d=await r.json();document.getElementById('diff').innerHTML='<h3>'+d.changes.length+' changed pages</h3>'+d.changes.map(x=>'<div class="field"><b>Page '+x.page+'</b> · similarity '+x.similarity+'<h4>Old</h4><pre>'+esc(x.old_text)+'</pre><h4>New</h4><pre>'+esc(x.new_text)+'</pre></div>').join('')}
-async function compliance(){const f=document.getElementById('cpdf').files[0];if(!f)return alert('Select tender PDF');const fd=new FormData();fd.append('file',f);fd.append('offered_text',document.getElementById('offered').value);const r=await fetch('/api/compliance',{method:'POST',body:fd});const d=await r.json();document.getElementById('matrix').innerHTML='<table class="table"><tr><th>Requirement</th><th>Offered</th><th>Status</th><th>Page</th></tr>'+d.items.map(x=>'<tr><td>'+esc(x.requirement)+'</td><td>'+esc(x.offered||'Not entered')+'</td><td>'+esc(x.status)+'</td><td>'+esc(x.source_page||'')+'</td></tr>').join('')+'</table>'}
+function fmtTime(sec){if(sec==null||!isFinite(sec)||sec<0)return '--';if(sec<60)return Math.round(sec)+'s';const m=Math.floor(sec/60),s=Math.round(sec%60);return m+'m '+s+'s'}
+function updateProgress(j){
+ const p=j.progress||{},total=p.total_pages||0,done=p.completed_pages||0,percent=total?Math.min(100,done/total*100):0;
+ document.getElementById('progressBox').classList.remove('hidden');
+ document.getElementById('phase').textContent=j.message||p.phase||j.status||'Processing';
+ document.getElementById('percent').textContent=Math.round(percent)+'%';
+ document.getElementById('bar').style.width=percent+'%';
+ document.getElementById('currentPage').textContent=done+' / '+(total||'?');
+ document.getElementById('textPages').textContent=p.text_pages||0;
+ document.getElementById('ocrPages').textContent=(p.ocr_pages||0)+' / '+(p.ocr_total||0);
+ document.getElementById('speed').textContent=p.speed_pages_per_min||0;
+ document.getElementById('eta').textContent=fmtTime(p.eta_seconds);
+ if(p.current_page) pageStates[p.current_page]=p.phase==='ocr'?'OCR':'Done';
+ const keys=Object.keys(pageStates).map(Number).sort((a,b)=>a-b).slice(-80);
+ document.getElementById('pageLog').innerHTML=keys.map(n=>'<div class="pagerow"><b>Page '+n+'</b><span class="badge '+(pageStates[n]==='OCR'?'ocr':'done')+'">'+pageStates[n]+'</span><span>'+((n===p.current_page&&p.phase==='ocr')?'Running Tesseract OCR':'Processed')+'</span><span></span></div>').join('');
+}
+async function analyze(){
+ const f=document.getElementById('pdf').files[0];if(!f)return alert('Select a PDF first');
+ lastFile=f;pageStates={};document.getElementById('result').innerHTML='';
+ document.getElementById('status').textContent='Starting high-speed page reader...';
+ try{
+  const fd=new FormData();fd.append('file',f);
+  const r=await fetch(API_BASE+'/api/tenders/start',{method:'POST',body:fd});const d=await r.json();
+  if(!r.ok)throw new Error(d.detail||'Unable to start analysis');
+  pollJob(d.job_id);
+ }catch(e){document.getElementById('status').textContent='Backend connection failed: '+e.message+' — run the TenderMate FastAPI backend.'}
+}
+async function pollJob(id){
+ clearInterval(pollTimer);
+ const tick=async()=>{try{const r=await fetch(API_BASE+'/api/jobs/'+id);const j=await r.json();if(!r.ok)throw new Error(j.detail);
+ updateProgress(j);
+ if(j.status==='complete'){clearInterval(pollTimer);lastData=j.result;document.getElementById('status').textContent='Complete — '+j.result.page_count+' pages processed and saved locally.';render(j.result)}
+ else if(j.status==='error'){clearInterval(pollTimer);document.getElementById('status').textContent='Error: '+j.message}
+ }catch(e){clearInterval(pollTimer);document.getElementById('status').textContent='Status connection failed: '+e.message}};
+ await tick();pollTimer=setInterval(tick,700);
+}
+function render(d){
+ let h='<div class="grid">';for(const [k,l] of Object.entries(labels)){const f=d.summary[k]||{};h+='<div class="field"><div class="label">'+l+'</div><div class="value">'+esc(f.value||'Not found')+'</div><div class="meta">'+(f.page?'Page '+f.page+' · '+Math.round(f.confidence*100)+'% confidence':'')+'</div></div>'}
+ h+='</div><div class="panel" style="margin-top:14px"><h2>Risk / Verification Flags</h2><ul class="list">'+d.risks.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul><h2>Requirements</h2><table class="table"><tr><th>Category</th><th>Requirement</th><th>Page</th></tr>'+d.requirements.map(x=>'<tr><td>'+esc(x.category)+'</td><td>'+esc(x.requirement)+'</td><td>'+x.page+'</td></tr>').join('')+'</table><h2>Page Text</h2><pre>'+esc(d.pages.map(p=>'--- Page '+p.page+' ['+p.method+'] ---\n'+p.text).join('\n\n'))+'</pre></div>';
+ document.getElementById('result').innerHTML=h;
+}
+async function exportXlsx(){if(!lastFile)return alert('Analyze/select a PDF first');const fd=new FormData();fd.append('file',lastFile);const r=await fetch(API_BASE+'/api/export',{method:'POST',body:fd});const b=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=lastFile.name.replace(/\.pdf$/i,'')+'_TenderMate.xlsx';a.click()}
+async function loadDashboard(){const r=await fetch(API_BASE+'/api/tenders');const d=await r.json();document.getElementById('dash').innerHTML='<h2>Saved Tenders</h2><table class="table"><tr><th>File</th><th>Reference</th><th>Title</th><th>Closing</th><th>Qty</th></tr>'+d.map(x=>'<tr><td>'+esc(x.filename)+'</td><td>'+esc(x.reference||'')+'</td><td>'+esc(x.title||'')+'</td><td>'+esc((x.closing_date||'')+' '+(x.closing_time||''))+'</td><td>'+esc(x.quantity||'')+'</td></tr>').join('')+'</table>'}
+async function compareAddendum(){const a=document.getElementById('oldpdf').files[0],b=document.getElementById('newpdf').files[0];if(!a||!b)return alert('Select both PDFs');const fd=new FormData();fd.append('old_file',a);fd.append('new_file',b);const r=await fetch(API_BASE+'/api/compare-addendum',{method:'POST',body:fd});const d=await r.json();document.getElementById('diff').innerHTML='<h3>'+d.changes.length+' changed pages</h3>'+d.changes.map(x=>'<div class="field"><b>Page '+x.page+'</b> · similarity '+x.similarity+'<h4>Old</h4><pre>'+esc(x.old_text)+'</pre><h4>New</h4><pre>'+esc(x.new_text)+'</pre></div>').join('')}
+async function compliance(){const f=document.getElementById('cpdf').files[0];if(!f)return alert('Select tender PDF');const fd=new FormData();fd.append('file',f);fd.append('offered_text',document.getElementById('offered').value);const r=await fetch(API_BASE+'/api/compliance',{method:'POST',body:fd});const d=await r.json();document.getElementById('matrix').innerHTML='<table class="table"><tr><th>Requirement</th><th>Offered</th><th>Status</th><th>Page</th></tr>'+d.items.map(x=>'<tr><td>'+esc(x.requirement)+'</td><td>'+esc(x.offered||'Not entered')+'</td><td>'+esc(x.status)+'</td><td>'+esc(x.source_page||'')+'</td></tr>').join('')+'</table>'}
 </script></body></html>
