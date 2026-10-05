@@ -33,20 +33,26 @@ Upload the original tender and an addendum/revised tender. TenderMate compares p
 ### 6. Product matching
 The backend includes an initial IT product catalog matcher for common Lenovo and HP business models. The catalog is designed to be expanded with your real MTM/SKU data.
 
-### 7. Risk flags
+### 7. Live processing monitor
+
+The analyzer runs as a background job and shows the current phase, current/total pages, native-text pages, OCR pages, OCR speed in pages/minute, estimated remaining time, and the latest page status. The UI does not freeze while a large tender is being processed.
+
+### 8. Risk flags
 Flags missing critical tender fields and warns when OCR was used.
 
-### 8. Tender dashboard
+### 9. Tender dashboard
 Analyzed tenders can be saved in a local SQLite database and listed from the dashboard.
 
-### 9. Excel export
+### 10. Excel export
 Exports Tender Summary, Requirements and Risks to XLSX.
 
-### 10. Cloud fallback hooks
+### 11. Cloud fallback hooks
 Optional Google Sheets and Firebase synchronization can be enabled with HTTPS webhook environment variables. Local SQLite remains the primary offline source.
 
-### 11. API
+### 12. API
 - `POST /api/analyze`
+- `POST /api/tenders/start` — background analysis job
+- `GET /api/jobs/{job_id}` — live progress/status
 - `POST /api/tenders`
 - `GET /api/tenders`
 - `GET /api/tenders/{id}`
@@ -110,4 +116,4 @@ SQLite + optional Google Sheets / Firebase
 
 ## Roadmap
 
-The next production hardening steps are stronger AI-assisted specification extraction, a maintained Lenovo/HP/Dell/ASUS/Acer catalog, exact numeric compliance rules, tender deadline alerts, user authentication and role-based access, and direct Google Sheets/Firebase connectors instead of webhook adapters.
+The current speed layer uses parallel OCR workers (configurable with `TENDERMATE_OCR_WORKERS`, default 4) and a lower OCR render scale optimized for tender documents. The next production hardening steps are stronger AI-assisted specification extraction, a maintained Lenovo/HP/Dell/ASUS/Acer catalog, exact numeric compliance rules, tender deadline alerts, user authentication and role-based access, and direct Google Sheets/Firebase connectors instead of webhook adapters.
