@@ -6,6 +6,7 @@ from threading import Lock
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.services.pdf_ocr import extract_pages
 from app.services.tender_parser import parse_tender, extract_requirements, detect_risks
@@ -17,6 +18,7 @@ from app.services.compliance import build_compliance
 from app.services.sync import sync_google_sheets, sync_firebase
 
 app = FastAPI(title="TenderMate – IT Pre-Sales Assistant", version="1.1.0")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=False, allow_methods=["*"], allow_headers=["*"])
 BASE = Path(__file__).resolve().parents[2]
 FRONTEND = BASE / "frontend"
 init_db()
