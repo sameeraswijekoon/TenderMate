@@ -84,11 +84,11 @@ async function testAiKey(){
  const out=document.getElementById("aiTestStatus"); if(!key){out.textContent="❌ No API key entered.";return}
  out.textContent="⏳ Testing Gemini 3.8 Flash...";
  try{
-  const res=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify({model:"gemini-3.8-flash",input:"Reply with exactly: TENDERMate API OK",store:false})});
-  const data=await res.json();
-  if(!res.ok) throw new Error(data?.error?.message||("HTTP "+res.status));
+  const res=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key,"Api-Revision":"2026-05-20"},body:JSON.stringify({model:"gemini-3.8-flash",input:"Reply exactly: TENDERMate API OK",store:false})});
+  const raw=await res.text(); let data={}; try{data=JSON.parse(raw)}catch{}
+  if(!res.ok) throw new Error("HTTP "+res.status+" — "+(data?.error?.message||raw.slice(0,500)));
   const text=data?.output_text||data?.steps?.flatMap(s=>s.content||[]).map(x=>x.text||"").join("")||"";
-  out.textContent=text?"✅ Gemini API working. Response: "+text:"⚠️ API responded but returned no text.";
+  out.textContent=text?"✅ Gemini API working. Response: "+text:"⚠️ HTTP 200 received, but no output text was returned.";
  }catch(e){out.textContent="❌ Gemini API test failed: "+e.message}
 }
 async function aiUnderstandTender(pages){
