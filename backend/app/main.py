@@ -109,6 +109,13 @@ async def analyze_bytes(data, filename):
     return await asyncio.to_thread(_process_tender, data, filename)
 
 
+async def _run_job(data, filename, job_id):
+    try:
+        await asyncio.to_thread(_process_tender, data, filename, job_id, True)
+    except Exception as exc:
+        _set_job(job_id, status="error", message=str(exc), finished_at=time.time())
+
+
 @app.post("/api/analyze")
 async def analyze(file: UploadFile = File(...)):
     if not file.filename.lower().endswith(".pdf"):
@@ -155,7 +162,7 @@ async def start_tender(file: UploadFile = File(...)):
             "created_at": time.time(),
         }
 
-    asyncio.create_task(asyncio.to_thread(_process_tender, data, file.filename, job_id, True))
+    asyncio.create_task(_run_job(data, file.filename, job_id))
     return {"job_id": job_id}
 
 
