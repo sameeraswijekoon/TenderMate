@@ -1,14 +1,36 @@
 # TenderMate – IT Pre-Sales Assistant
 
-TenderMate is a local-first tender intelligence tool for IT pre-sales teams.
+TenderMate is a GitHub Pages, browser-based tender intelligence tool for IT pre-sales teams.
 
-## What is included
+## GitHub Pages mode
 
-### 1. Tender analyzer
-Upload one tender PDF and TenderMate processes every page. Native PDF text is used when available and scanned pages automatically go through Tesseract OCR.
+The main TenderMate application runs entirely in the browser.
 
-### 2. Tender summary
-Extracts common tender information with source page and confidence:
+- No FastAPI required
+- No Python required
+- No local server required
+- No Docker required
+- PDF processing happens locally in the browser
+- Browser OCR uses Tesseract.js
+- PDF reading uses PDF.js
+- Excel export uses SheetJS
+- Last analyzed tender can be stored in browser localStorage
+
+Open the app from GitHub Pages and upload a tender PDF.
+
+## Tender analyzer
+
+TenderMate reads every PDF page directly in the browser.
+
+1. Native PDF text is extracted first.
+2. Pages with little/no native text are sent to browser OCR.
+3. Tender pages are scored for relevance using terms such as closing date, pre-bid, technical specifications, warranty, delivery, bid security, eligibility, price schedule, submission, processor, RAM, storage, display, USB and PCIe.
+4. A live progress monitor shows pages processed, OCR pages, speed, ETA and relevant-page count.
+
+## Tender summary
+
+Extracts common tender information from the browser-processed text:
+
 - Tender title / reference
 - Closing date and time
 - Pre-bid date, time and location
@@ -21,99 +43,48 @@ Extracts common tender information with source page and confidence:
 - Performance security
 - Required documents
 
-### 3. Technical / requirement extraction
-Detects lines that look like mandatory specifications, certificates, eligibility, delivery and document requirements.
+## Requirement extraction
 
-### 4. Compliance matrix
-Paste an offered model/specification and generate a requirement-by-requirement review. Results are intentionally marked for manual verification rather than pretending that uncertain matches are compliant.
+Detects lines that look like mandatory tender requirements, specifications, certificates, eligibility, delivery and document requirements.
 
-### 5. Addendum comparison
-Upload the original tender and an addendum/revised tender. TenderMate compares page text and identifies changed pages.
+Each detected requirement keeps its source page.
 
-### 6. Product matching
-The backend includes an initial IT product catalog matcher for common Lenovo and HP business models. The catalog is designed to be expanded with your real MTM/SKU data.
+## Browser compliance review
 
-### 7. Live processing monitor
+Paste the offered model/specification and generate a requirement-by-requirement review. Results are deliberately marked for review rather than claiming uncertain matches are compliant.
 
-The analyzer runs as a background job and shows the current phase, current/total pages, native-text pages, OCR pages, OCR speed in pages/minute, estimated remaining time, and the latest page status. The UI does not freeze while a large tender is being processed.
+## Excel export
 
-### 8. Risk flags
-Flags missing critical tender fields and warns when OCR was used.
+Exports Tender Summary, Requirements and Risks to an XLSX file directly from the browser.
 
-### 9. Tender dashboard
-Analyzed tenders can be saved in a local SQLite database and listed from the dashboard.
+## Local browser dashboard
 
-### 10. Excel export
-Exports Tender Summary, Requirements and Risks to XLSX.
+The latest analyzed tender is stored in browser localStorage so the GitHub Pages app can show the last analysis without a backend database.
 
-### 11. Cloud fallback hooks
-Optional Google Sheets and Firebase synchronization can be enabled with HTTPS webhook environment variables. Local SQLite remains the primary offline source.
+## Important limitation
 
-### 12. API
-- `POST /api/analyze`
-- `POST /api/tenders/start` — background analysis job
-- `GET /api/jobs/{job_id}` — live progress/status
-- `POST /api/tenders`
-- `GET /api/tenders`
-- `GET /api/tenders/{id}`
-- `POST /api/export`
-- `POST /api/compare-addendum`
-- `POST /api/product-match`
-- `POST /api/compliance`
-- `POST /api/sync/{id}`
+GitHub Pages is static hosting, so Python/FastAPI cannot run there. The GitHub Pages version therefore uses browser technologies instead:
 
-## Run locally
+GitHub Pages → TenderMate JavaScript → PDF.js → native PDF text → Tesseract.js OCR → tender parser → summary/requirements/risks → Excel export
 
-### Windows
+For very large scanned tenders, OCR speed depends on the user's CPU, browser and PDF complexity. Keep the browser tab open while processing.
 
-Install Python 3.11+ and Tesseract OCR.
+## Repository
 
-```bat
-cd backend
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
+https://github.com/sameeraswijekoon/TenderMate
 
-Then open http://127.0.0.1:8000
+## Main application
 
-### Docker
+https://sameeraswijekoon.github.io/TenderMate/
 
-```bash
-docker compose up --build
-```
+## Future production improvements
 
-## Optional sync
-
-Set:
-- `GOOGLE_SHEETS_WEBHOOK_URL`
-- `FIREBASE_WEBHOOK_URL`
-
-These are intentionally webhook-based so credentials are not stored in source code.
-
-## Architecture
-
-```
-PDF Upload
-   ↓
-Page Extraction
-   ↓
-OCR fallback for scanned pages
-   ↓
-Page-level text store
-   ↓
-Tender Parser
-   ├── Summary
-   ├── Requirements
-   ├── Risk Flags
-   └── Source Pages
-        ↓
-Dashboard / Compliance / Addendum / Product Match / Excel
-        ↓
-SQLite + optional Google Sheets / Firebase
-```
-
-## Roadmap
-
-The current speed layer uses parallel OCR workers (configurable with `TENDERMATE_OCR_WORKERS`, default 4) and a lower OCR render scale optimized for tender documents. The next production hardening steps are stronger AI-assisted specification extraction, a maintained Lenovo/HP/Dell/ASUS/Acer catalog, exact numeric compliance rules, tender deadline alerts, user authentication and role-based access, and direct Google Sheets/Firebase connectors instead of webhook adapters.
+- Smart relevance-first OCR so only high-value scanned pages receive deep OCR
+- Better table/specification extraction
+- Exact numeric compliance rules for CPU, RAM, storage, display, ports, PSU, warranty, etc.
+- Page thumbnails and click-to-source-page navigation
+- Sinhala/Tamil OCR language support
+- Lenovo/HP/Dell/ASUS/Acer MTM/SKU catalog
+- Tender deadline reminders
+- Google Sheets / Firebase cloud persistence when required
+- AI-assisted tender interpretation
