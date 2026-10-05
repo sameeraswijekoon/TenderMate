@@ -8,6 +8,7 @@ from app.services.exporter import tender_xlsx
 from app.services.addendum import compare_pages
 from app.services.product_matcher import match_products
 from app.services.compliance import build_compliance
+from app.services.sync import sync_google_sheets,sync_firebase
 
 app=FastAPI(title='TenderMate – IT Pre-Sales Assistant',version='1.0.0')
 BASE=Path(__file__).resolve().parents[2]; FRONTEND=BASE/'frontend'
@@ -15,6 +16,12 @@ init_db()
 
 @app.get('/')
 def home(): return FileResponse(FRONTEND/'index.html')
+@app.post('/api/sync/{tender_id}')
+def sync(tender_id:int):
+    p=get_tender(tender_id)
+    if not p: raise HTTPException(404,'Tender not found')
+    return {'google_sheets':sync_google_sheets(p),'firebase':sync_firebase(p)}
+
 @app.get('/api/health')
 def health(): return {'status':'ok','app':'TenderMate','version':'1.0.0'}
 
