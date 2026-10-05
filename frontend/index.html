@@ -1,49 +1,21 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TenderMate – IT Pre-Sales Assistant</title>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TenderMate</title>
 <style>
-body{font-family:Arial,sans-serif;background:#f5f7fa;margin:0;color:#172033}
-header{background:#172033;color:white;padding:22px 28px} h1{margin:0;font-size:24px}
-main{max-width:1100px;margin:25px auto;padding:0 18px}
-.upload{background:white;border:2px dashed #9aa8bd;border-radius:12px;padding:35px;text-align:center}
-button{background:#172033;color:white;border:0;border-radius:7px;padding:11px 18px;cursor:pointer}
-#status{margin:15px 0;color:#586579}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:20px}
-.card{background:white;border-radius:10px;padding:15px;border:1px solid #e1e6ed}
-.label{font-size:12px;color:#68758a;text-transform:uppercase}.value{font-size:16px;margin-top:6px}
-.page{font-size:11px;color:#68758a}.confidence{float:right}
-pre{white-space:pre-wrap;background:white;padding:15px;border-radius:10px;max-height:450px;overflow:auto}
-@media(max-width:700px){.grid{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-<header><h1>TenderMate – IT Pre-Sales Assistant</h1></header>
-<main>
-<div class="upload">
-<input id="pdf" type="file" accept=".pdf">
-<button onclick="analyze()">Analyze Tender</button>
-<div id="status">Upload one tender PDF. Digital and scanned PDFs are supported.</div>
-</div>
-<section id="result"></section>
-</main>
-<script>
-const labels={tender_title:"Tender Title",reference_number:"Reference Number",closing_date:"Closing Date",closing_time:"Closing Time",pre_bid_date:"Pre-Bid Date",pre_bid_time:"Pre-Bid Time",pre_bid_location:"Pre-Bid Location",submission_location:"Submission Location",delivery_period:"Delivery Period",bid_validity:"Bid Validity",quantity:"Tender Quantity",warranty:"Warranty",bid_security:"Bid Security",performance_security:"Performance Security",required_documents:"Required Documents"};
-async function analyze(){
- const input=document.getElementById("pdf"), status=document.getElementById("status");
- if(!input.files[0]){status.textContent="Select a PDF first.";return}
- const fd=new FormData(); fd.append("file",input.files[0]); status.textContent="Reading pages and running OCR where required...";
- try{
-  const res=await fetch("/api/analyze",{method:"POST",body:fd}); const data=await res.json();
-  if(!res.ok) throw new Error(data.detail||"Analysis failed");
-  let html='<h2>'+escape(data.filename)+' — '+data.page_count+' pages</h2><div class="grid">';
-  for(const [key,label] of Object.entries(labels)){const f=data.summary[key]||{};html+=`<div class="card"><div class="label">${label}<span class="confidence">${f.confidence?Math.round(f.confidence*100)+"%":""}</span></div><div class="value">${escape(f.value||"Not found")}</div><div class="page">${f.page?"Source: Page "+f.page:""}</div></div>`}
-  html+='</div><h2>OCR / Extracted Pages</h2><pre>'+escape(data.pages.map(p=>'--- Page '+p.page+' ['+p.method+'] ---\n'+p.text).join('\n\n'))+'</pre>';
-  document.getElementById("result").innerHTML=html; status.textContent="Analysis complete.";
- }catch(e){status.textContent=e.message}
-}
-function escape(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
-</script>
-</body>
-</html>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial;background:#f3f6fa;color:#182235}header{background:#162033;color:#fff;padding:18px 28px;display:flex;justify-content:space-between;align-items:center}h1{margin:0;font-size:22px}main{max-width:1250px;margin:24px auto;padding:0 18px}.toolbar,.panel,.card{background:#fff;border:1px solid #e0e6ee;border-radius:12px;padding:18px}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}button{background:#162033;color:#fff;border:0;border-radius:7px;padding:10px 15px;cursor:pointer}button.secondary{background:#e9eef5;color:#182235}.tabs{display:flex;gap:7px;margin:18px 0;flex-wrap:wrap}.tabs button.active{background:#3657d6}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field{padding:13px;border:1px solid #e4e8ef;border-radius:9px}.label{font-size:11px;color:#6d7889;text-transform:uppercase}.value{font-weight:600;margin-top:5px}.meta{font-size:11px;color:#778397;margin-top:5px}.ok{color:#17824b}.warn{color:#a76500}.danger{color:#b72c35}.list{margin:0;padding-left:20px}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;border-bottom:1px solid #e5e9ef;padding:9px;font-size:13px;vertical-align:top}.upload{border:2px dashed #9eabc0;padding:25px;text-align:center;border-radius:10px;margin-bottom:14px}pre{white-space:pre-wrap;max-height:420px;overflow:auto;background:#f6f8fb;padding:12px;border-radius:8px}.hidden{display:none}@media(max-width:850px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:600px){.grid{grid-template-columns:1fr}}
+</style></head><body><header><h1>⚡ TenderMate – IT Pre-Sales Assistant</h1><span>PDF → OCR → Tender Intelligence</span></header><main>
+<div class="tabs"><button class="active" onclick="showTab('analyze',this)">Analyze Tender</button><button onclick="showTab('dashboard',this)">Tender Dashboard</button><button onclick="showTab('addendum',this)">Addendum Diff</button><button onclick="showTab('compliance',this)">Compliance</button></div>
+<section id="analyze"><div class="upload"><input id="pdf" type="file" accept=".pdf"><button onclick="analyze()">Analyze & Save</button><button class="secondary" onclick="exportXlsx()">Export Excel</button><div id="status">Upload one tender PDF. Scanned PDFs are supported.</div></div><div id="result"></div></section>
+<section id="dashboard" class="hidden"><div class="panel"><button onclick="loadDashboard()">Refresh</button><div id="dash"></div></div></section>
+<section id="addendum" class="hidden"><div class="panel"><h2>Compare Addendum</h2><p>Select original tender and addendum PDF.</p><input id="oldpdf" type="file" accept=".pdf"> <input id="newpdf" type="file" accept=".pdf"> <button onclick="compareAddendum()">Compare</button><div id="diff"></div></div></section>
+<section id="compliance" class="hidden"><div class="panel"><h2>Compliance Matrix</h2><input id="cpdf" type="file" accept=".pdf"><p>Paste offered model/specification text:</p><textarea id="offered" rows="6" style="width:100%"></textarea><button onclick="compliance()">Build Matrix</button><div id="matrix"></div></div></section>
+</main><script>
+let lastFile=null,lastData=null;
+const labels={tender_title:'Tender Title',reference_number:'Reference Number',closing_date:'Closing Date',closing_time:'Closing Time',pre_bid_date:'Pre-Bid Date',pre_bid_time:'Pre-Bid Time',pre_bid_location:'Pre-Bid Location',submission_location:'Submission Location',delivery_period:'Delivery Period',bid_validity:'Bid Validity',quantity:'Tender Quantity',warranty:'Warranty',bid_security:'Bid Security',performance_security:'Performance Security',required_documents:'Required Documents'};
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function showTab(id,btn){document.querySelectorAll('main>section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');if(id==='dashboard')loadDashboard()}
+async function analyze(){const f=document.getElementById('pdf').files[0];if(!f)return alert('Select a PDF first');lastFile=f;document.getElementById('status').textContent='Processing every page and running OCR where required...';const fd=new FormData();fd.append('file',f);const r=await fetch('/api/tenders',{method:'POST',body:fd});const d=await r.json();if(!r.ok)return alert(d.detail);lastData=d;render(d);document.getElementById('status').textContent='Complete — tender saved locally.'}
+function render(d){let h='<div class="grid">';for(const [k,l] of Object.entries(labels)){const f=d.summary[k]||{};h+=`<div class="field"><div class="label">${l}</div><div class="value">${esc(f.value||'Not found')}</div><div class="meta">${f.page?'Page '+f.page+' · '+Math.round(f.confidence*100)+'% confidence':''}</div></div>`}h+='</div><div class="panel" style="margin-top:14px"><h2>Risk / Verification Flags</h2><ul class="list">'+d.risks.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul><h2>Requirements</h2><table class="table"><tr><th>Category</th><th>Requirement</th><th>Page</th></tr>'+d.requirements.map(x=>'<tr><td>'+esc(x.category)+'</td><td>'+esc(x.requirement)+'</td><td>'+x.page+'</td></tr>').join('')+'</table><h2>Page Text</h2><pre>'+esc(d.pages.map(p=>'--- Page '+p.page+' ['+p.method+'] ---\n'+p.text).join('\n\n'))+'</pre></div>';document.getElementById('result').innerHTML=h}
+async function exportXlsx(){if(!lastFile)return alert('Analyze/select a PDF first');const fd=new FormData();fd.append('file',lastFile);const r=await fetch('/api/export',{method:'POST',body:fd});const b=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=lastFile.name.replace(/\.pdf$/i,'')+'_TenderMate.xlsx';a.click()}
+async function loadDashboard(){const r=await fetch('/api/tenders');const d=await r.json();document.getElementById('dash').innerHTML='<h2>Saved Tenders</h2><table class="table"><tr><th>File</th><th>Reference</th><th>Title</th><th>Closing</th><th>Qty</th></tr>'+d.map(x=>'<tr><td>'+esc(x.filename)+'</td><td>'+esc(x.reference||'')+'</td><td>'+esc(x.title||'')+'</td><td>'+esc((x.closing_date||'')+' '+(x.closing_time||''))+'</td><td>'+esc(x.quantity||'')+'</td></tr>').join('')+'</table>'}
+async function compareAddendum(){const a=document.getElementById('oldpdf').files[0],b=document.getElementById('newpdf').files[0];if(!a||!b)return alert('Select both PDFs');const fd=new FormData();fd.append('old_file',a);fd.append('new_file',b);const r=await fetch('/api/compare-addendum',{method:'POST',body:fd});const d=await r.json();document.getElementById('diff').innerHTML='<h3>'+d.changes.length+' changed pages</h3>'+d.changes.map(x=>'<div class="field"><b>Page '+x.page+'</b> · similarity '+x.similarity+'<h4>Old</h4><pre>'+esc(x.old_text)+'</pre><h4>New</h4><pre>'+esc(x.new_text)+'</pre></div>').join('')}
+async function compliance(){const f=document.getElementById('cpdf').files[0];if(!f)return alert('Select tender PDF');const fd=new FormData();fd.append('file',f);fd.append('offered_text',document.getElementById('offered').value);const r=await fetch('/api/compliance',{method:'POST',body:fd});const d=await r.json();document.getElementById('matrix').innerHTML='<table class="table"><tr><th>Requirement</th><th>Offered</th><th>Status</th><th>Page</th></tr>'+d.items.map(x=>'<tr><td>'+esc(x.requirement)+'</td><td>'+esc(x.offered||'Not entered')+'</td><td>'+esc(x.status)+'</td><td>'+esc(x.source_page||'')+'</td></tr>').join('')+'</table>'}
+</script></body></html>
